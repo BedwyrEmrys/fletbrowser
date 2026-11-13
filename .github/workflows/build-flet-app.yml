@@ -50,7 +50,7 @@ jobs:
           # 激活虚拟环境以让 flet CLI 生效
           source .venv/bin/activate
           # 执行打包，加入 --android-skip-build-dependency-validation 跳过潜在的依赖冲突校验
-          flet build apk --android-skip-build-dependency-validation
+          flet build apk 
 
       # 8. 上传生成的 APK 文件到 GitHub Actions 产物中
       - name: Upload APK Artifact
