@@ -26,67 +26,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      # 2. Latest stable Python 3.x
-      - name: Set up Python
-        uses: actions/setup-python@v7
+      # 2. Build APK using official Flet action
+      - name: Build Android APK
+        id: build
+        uses: flet-dev/flet-build-action@v1
         with:
-          python-version: "==3.14"
+          target: apk
+          runner-python-version: "3.14"
+          bundled-python-version: "3.14"
+          build-number: ${{ github.run_number }}
+          cache: true
 
-      # 3. Java 17 (Flet Android requirement)
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      # 4. Install latest uv
-      - name: Set up uv
-        uses: astral-sh/setup-uv@v10.3.3
-        with:
-          enable-cache: true
-          cache-dependency-glob: |
-            **/pyproject.toml
-            **/requirements*.txt
-
-      # 5. Install / upgrade all Python dependencies
-      - name: Install latest Python dependencies
-        run: |
-          uv sync -U
-
-      # 6. Verify environment
-      - name: Check environment
-        run: |
-          python --version
-          uv --version
-          java -version
-          uv run --no-sync flet --version
-
-      # 7. Build Android APK
-      - name: Build APK
-        run: |
-          uv run --no-sync flet build apk --verbose
-
-      # 8. Verify APK
-      - name: Verify APK
-        shell: bash
-        run: |
-          APK="build/flutter/build/app/outputs/flutter-apk/app-release.apk"
-
-          if [[ ! -s "$APK" ]]; then
-            echo "::error::APK not found or empty"
-            find build -type f -name "*.apk" || true
-            exit 1
-          fi
-
-          echo "APK successfully generated:"
-          ls -lh "$APK"
-
-      # 9. Upload APK
+      # 3. Upload APK
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v7
         with:
           name: flet-apk-release
-          path: build/flutter/build/app/outputs/flutter-apk/app-release.apk
+          path: ${{ steps.build.outputs.archive-path }}
+          archive: false
           if-no-files-found: error
-          compression-level: 0
           retention-days: 14
