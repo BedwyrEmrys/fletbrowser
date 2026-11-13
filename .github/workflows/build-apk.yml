@@ -1,4 +1,4 @@
-name: Build Smoke Test
+name: Build Flet App
 
 on:
   workflow_dispatch:
