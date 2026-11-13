@@ -1,7 +1,8 @@
-name: Build Flet App
+name: Build Flet Android APK
 
 on:
   push:
+    branches: [ "main", "master" ]
   workflow_dispatch:
 
 jobs:
@@ -9,20 +10,55 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      # 2. 设置稳定的 Python 3.12 环境（规避高版本解析故障）
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3. 设置 Java 环境（Android 打包必需）
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 4. 设置 Flutter SDK 环境
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+          cache: true
+
+      # 5. 设置 Astral uv 工具
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      # 6. 使用 uv 创建虚拟环境并安装指定版本的 flet==1.1.2
+      - name: Install Dependencies with uv
+        run: |
+          uv venv --python 3.12
+          # 激活虚拟环境并安装目标版本的 flet 和依赖
+          .venv/bin/pip install --upgrade pip
+          uv pip install flet==1.1.2 flet-webview==1.1.2
+
+      # 7. 执行 Flet 构建 APK 命令
       - name: Build APK
-        id: build
-        uses: flet-dev/flet-build-action@v1
-        with:
-          target: apk
-          runner-python-version: "3.12"
-          bundled-python-version: "3.12"
-          build-number: ${{ github.run_number }}
+        run: |
+          # 激活虚拟环境以让 flet CLI 生效
+          source .venv/bin/activate
+          # 执行打包，加入 --android-skip-build-dependency-validation 跳过潜在的依赖冲突校验
+          flet build apk --android-skip-build-dependency-validation
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v7
+      # 8. 上传生成的 APK 文件到 GitHub Actions 产物中
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: ${{ steps.build.outputs.archive-path }}
-          archive: false
+          name: flet-apk-release
+          path: build/flutter/build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
