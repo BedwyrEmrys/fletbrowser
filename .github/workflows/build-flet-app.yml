@@ -48,7 +48,7 @@ jobs:
 
       # 7. 执行 Flet 构建 APK 命令
       - name: Build APK
-        run: uv run --locked flet build apk -y
+        run: uv run --locked flet build -y apk
 
       # 8. 上传生成的 APK 文件到 GitHub Actions 产物中
       - name: Upload APK Artifact
