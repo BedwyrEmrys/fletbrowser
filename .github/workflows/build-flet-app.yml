@@ -42,7 +42,7 @@ jobs:
 
       # 4. Install latest uv
       - name: Set up uv
-        uses: astral-sh/setup-uv@latest
+        uses: astral-sh/setup-uv@v10.3.3
         with:
           enable-cache: true
           cache-dependency-glob: |
