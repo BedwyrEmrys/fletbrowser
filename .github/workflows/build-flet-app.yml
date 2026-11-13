@@ -1,77 +1,28 @@
 name: Build Flet App
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: read
+  workflow_dispatch:
 
 jobs:
-  build:
-    name: Build ${{ matrix.target }}
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - target: apk
-            runner: ubuntu-latest
-
-          # - target: aab
-          #   runner: ubuntu-latest
-
-          # - target: ipa
-          #   runner: macos-latest
-
-          # - target: ios-simulator
-          #   runner: macos-latest
-
-          # - target: linux
-          #   runner: ubuntu-latest
-
-          # - target: macos
-          #   runner: macos-latest
-
-          # - target: web
-          #   runner: ubuntu-latest
-
-          # - target: windows
-          #   runner: windows-latest
+  build-apk:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          persist-credentials: false
+      - uses: actions/checkout@v6
 
-      - name: Build app
+      - name: Build APK
         id: build
-        uses: ./
+        uses: flet-dev/flet-build-action@v1
         with:
-          target: ${{ matrix.target }}
-          # working-directory: sample
+          target: apk
           runner-python-version: "3.14"
           bundled-python-version: "3.14"
           build-number: ${{ github.run_number }}
 
-      - name: Verify action outputs
-        shell: bash
-        env:
-          OUTPUT_PATH: ${{ steps.build.outputs.output-path }}
-          ARCHIVE_PATH: ${{ steps.build.outputs.archive-path }}
-        run: |
-          set -euo pipefail
-          test -d "$OUTPUT_PATH"
-          test -f "$ARCHIVE_PATH"
-
-      - name: Upload archive
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ steps.build.outputs.archive-path }}
           archive: false
           if-no-files-found: error
-          overwrite: false
