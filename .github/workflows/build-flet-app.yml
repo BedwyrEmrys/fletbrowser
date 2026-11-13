@@ -5,6 +5,9 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
@@ -14,11 +17,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 设置稳定的 Python 3.12 环境（规避高版本解析故障）
+      # 2. 设置与锁文件要求一致的 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.14'
 
       # 3. 设置 Java 环境（Android 打包必需）
       - name: Set up Java
@@ -39,18 +42,13 @@ jobs:
       - name: Set up uv
         uses: astral-sh/setup-uv@v5
 
-      # 6. 使用 uv 创建虚拟环境并安装指定版本的 flet==1.1.2
+      # 6. 使用锁文件安装依赖
       - name: Install Dependencies with uv
-        run: |
-          uv sync -U
+        run: uv sync --locked
 
       # 7. 执行 Flet 构建 APK 命令
       - name: Build APK
-        run: |
-          # 激活虚拟环境以让 flet CLI 生效
-          source .venv/bin/activate
-          # 执行打包，加入 --android-skip-build-dependency-validation 跳过潜在的依赖冲突校验
-          flet build apk -y
+        run: uv run --locked flet build apk -y
 
       # 8. 上传生成的 APK 文件到 GitHub Actions 产物中
       - name: Upload APK Artifact
