@@ -51,7 +51,7 @@ jobs:
       # 5. Install / upgrade all Python dependencies
       - name: Install latest Python dependencies
         run: |
-          uv sync --no-lock --upgrade
+          uv sync -U
 
       # 6. Verify environment
       - name: Check environment
