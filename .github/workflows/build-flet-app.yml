@@ -1,33 +1,17 @@
-
-name: Build Flet Android APK
+name: Build Flet App
 
 on:
   push:
-    branches:
-      - main
-      - master
   workflow_dispatch:
-
-permissions:
-  contents: read
-
-concurrency:
-  group: android-build-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build-apk:
-    name: Build Android APK
     runs-on: ubuntu-latest
-    timeout-minutes: 60
 
     steps:
-      # 1. Checkout
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - uses: actions/checkout@v6
 
-      # 2. Build APK using official Flet action
-      - name: Build Android APK
+      - name: Build APK
         id: build
         uses: flet-dev/flet-build-action@v1
         with:
@@ -35,13 +19,10 @@ jobs:
           runner-python-version: "3.14"
           bundled-python-version: "3.14"
           build-number: ${{ github.run_number }}
-          cache: true
 
-      # 3. Upload APK
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
-          name: flet-apk-release
           path: ${{ steps.build.outputs.archive-path }}
           archive: false
           if-no-files-found: error
