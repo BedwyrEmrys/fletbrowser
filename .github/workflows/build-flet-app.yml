@@ -42,10 +42,7 @@ jobs:
       # 6. 使用 uv 创建虚拟环境并安装指定版本的 flet==1.1.2
       - name: Install Dependencies with uv
         run: |
-          uv venv --python 3.12
-          # 激活虚拟环境并安装目标版本的 flet 和依赖
-          .venv/bin/pip install --upgrade pip
-          uv pip install flet==1.1.2 flet-webview==1.1.2
+          uv sync -U
 
       # 7. 执行 Flet 构建 APK 命令
       - name: Build APK
